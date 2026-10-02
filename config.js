@@ -1,3 +1,1 @@
-// Filled in by `npm run booking-site` from EXPO_PUBLIC_CLOUD_URL in .env.
-// Or edit by hand: your Cloud Bridge Web app URL (ends in /exec).
-window.SBX_API = "";
+window.SBX_API = "https://script.google.com/macros/s/AKfycbyiaVbIBnlofgw2bzTbHL8xEH05kU9ojoGVH6qWUk9-UnC7LQhUsIqBJSQs1n9hzZ8Thw/exec";
