@@ -49,8 +49,10 @@
   .pill.on{background:var(--brand);border-color:var(--brand);color:#fff}
   .grp{font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:12px 0 6px}
   .slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-  .slot{border:1.5px solid var(--line);border-radius:12px;padding:10px 0;text-align:center;font-weight:750;background:#fff;cursor:pointer}
+  .slot{border:1.5px solid var(--line);border-radius:12px;padding:10px 0;text-align:center;font:inherit;font-weight:750;background:#fff;cursor:pointer}
   .slot.on{background:var(--brand);border-color:var(--brand);color:#fff}
+  .slot.busy{color:#918b95;background:#f7f6f4;border-color:#e8e5e0;cursor:not-allowed}
+  .slot.busy small{display:block;color:var(--err);font-size:10px;line-height:1.2}
   input.f,textarea.f{width:100%;padding:13px 12px;border:1.5px solid var(--line);border-radius:12px;font-size:16px;margin-bottom:10px;background:#fff;font-family:inherit}
   input.f:focus,textarea.f:focus,.search:focus{outline:none;border-color:var(--brand)}
   .muted{color:var(--muted);font-size:13px}
@@ -126,7 +128,7 @@
     for (var m = o; m + d <= c; m += st) {
       var t = hm(m);
       if (S.date === ymd(now) && m < now.getHours() * 60 + now.getMinutes() + lead) continue;
-      if (free(S.date, t, d)) out.push(t);
+      out.push({ time: t, available: free(S.date, t, d) });
     }
     return out;
   }
@@ -204,10 +206,16 @@
         var sl = slots();
         if (!sl.length) h += '<p class="muted">No free time on this day — please try another date.</p>';
         [["Morning", 0, 720], ["Afternoon", 720, 1020], ["Evening", 1020, 1440]].forEach(function (g) {
-          var part = sl.filter(function (t) { return mm(t) >= g[1] && mm(t) < g[2]; });
+          var part = sl.filter(function (x) { return mm(x.time) >= g[1] && mm(x.time) < g[2]; });
           if (!part.length) return;
-          h += '<div class="grp">' + g[0] + '</div><div class="slots">' + part.map(function (t) { return '<div class="slot' + (S.time === t ? " on" : "") + '" data-time="' + t + '">' + h12(t).replace(" ", "<br><small>") + "</small></div>"; }).join("") + "</div>";
+          h += '<div class="grp">' + g[0] + '</div><div class="slots">' + part.map(function (x) {
+            var t = x.time;
+            return x.available
+              ? '<button type="button" class="slot' + (S.time === t ? " on" : "") + '" data-time="' + t + '">' + h12(t) + "</button>"
+              : '<button type="button" class="slot busy" disabled aria-label="' + esc(h12(t) + " — booked") + '"><span>' + h12(t) + '</span><small>✕ Booked</small></button>';
+          }).join("") + "</div>";
         });
+        if (sl.some(function (x) { return !x.available; })) h += '<p class="muted">Times marked ✕ are already booked.</p>';
       }
       h += "</div>";
     }
